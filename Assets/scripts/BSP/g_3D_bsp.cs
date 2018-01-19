@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(MeshFilter))]
 public class g_3D_bsp : MonoBehaviour {
 
     [Header("NOTE: 'Y' is up you doofus")]
@@ -29,66 +30,78 @@ public class g_3D_bsp : MonoBehaviour {
     [Header("Min Distance from section to room")]
     [Range(1, 1000)] public int sectionToRoomPadding = 20;
 
-    struct Cube {
-        public int x, y, z, disX, disY, disZ;
-        public Cube(int x, int y, int z, int disX, int disY, int disZ) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.disX = disX;
-            this.disY = disY;
-            this.disZ = disZ;
-        }
-    }
+    enum Axis {x,y,z}
 
     // Use this for initialization
     void Start () {
         Cube cave = new Cube(0, 0, 0, caveX, caveY, caveZ);
-        DrawCube(cave, Color.yellow);
+        cave.DrawCube(Color.yellow);
         GenerateCutRec(cave);
     }
-	
+
 	// Update is called once per frame
 	void Update () {
-		
+
 	}
 
-    void GenerateCutRec(Cube section)
-    {
+    /* GenerateCutRec
+
+    determines if it can cut a section(Cube) in either axis[x,y,z],
+        if multiple axis can be cut, uses random.
+
+    parameters:
+        Cube section: section being proccesd
+    
+    return:
+        void
+
+    recursive: 
+        calls methods for either axis being cut which
+        each call GenerateCubeRec 2 times.
+    */
+    void GenerateCutRec(Cube section){
         bool canCutX = CanCutInX(section);
         bool canCutY = CanCutInY(section);
         bool canCutZ = CanCutInZ(section);
-        
+
         //can cut in the three dimensions?
-        if (canCutX && canCutY && canCutZ)
-        {
-            int axis = Random3();
-            if (axis == 1) { CutX(section); }
-            else if (axis == 2) { CutY(section); }
-            else if (axis == 3) { CutZ(section); }
-            else { Debug.LogError("Invalid Random int"); }
-        }
-        else if (canCutX && canCutY)
-        {
-            if (RandomBool()) { CutX(section); }
-            else { CutY(section); }
-        }
-        else if (canCutX && canCutZ)
-        {
-            if (RandomBool()) { CutX(section); }
-            else { CutZ(section); }
-        }
-        else if (canCutY && canCutZ)
-        {
-            if (RandomBool()) { CutY(section); }
-            else { CutZ(section); }
-        }
-        else if (canCutX) { CutX(section); }
-        else if (canCutY) { CutY(section); }
-        else if (canCutZ) { CutZ(section); }
+        if (canCutX && canCutY && canCutZ){
+            //random pick
+            Axis axis = RandomAxis();
+            if (axis == Axis.x) { CutAxis(section, Axis.x); }
+            else if (axis == Axis.y) { CutAxis(section, Axis.y); }
+            else if (axis == Axis.z) { CutAxis(section, Axis.z); }
+            else { Debug.LogError("Invalid Random Axis"); }
+        }else if (canCutX && canCutY){
+            //can cut in x and y? random pick
+            if (RandomBool()) { CutAxis(section, Axis.x); }
+            else { CutAxis(section, Axis.y); }
+        }else if (canCutX && canCutZ){
+            //can cut in x and z? random pick
+            if (RandomBool()) { CutAxis(section, Axis.x); }
+            else { CutAxis(section, Axis.z); }
+        }else if (canCutY && canCutZ){
+            //can cut in y and z? random pick
+            if (RandomBool()) { CutAxis(section, Axis.y); }
+            else { CutAxis(section, Axis.z); }
+        }//can only cut in one, do it
+        else if (canCutX) { CutAxis(section, Axis.x); }
+        else if (canCutY) { CutAxis(section, Axis.y); }
+        else if (canCutZ) { CutAxis(section, Axis.z); }
         else { GenerateRoom(section); }
     }
 
+    /* GenerateRoom 
+
+    calculates random values for a room(Cube) which rests inside a section(Cube),
+        this taking into account: minRoom[X,Y,Z] and sectionToRoomPadding
+    
+    parameters:
+        Cube section: section(Cube) in which a room(Cube) is being generated
+
+    return:
+        void
+    */
     void GenerateRoom(Cube section) {
         int distanceX = Random.Range(minRoomX, section.disX - section.x - 2 * sectionToRoomPadding);
         int distanceY = Random.Range(minRoomY, section.disY - section.y - 2 * sectionToRoomPadding);
@@ -99,130 +112,127 @@ public class g_3D_bsp : MonoBehaviour {
         int coordenateZ = Random.Range(section.z + sectionToRoomPadding, section.disZ - sectionToRoomPadding - distanceZ);
 
         Cube aux = new Cube(coordenateX, coordenateY, coordenateZ, distanceX, distanceY, distanceZ);
-        GenerateCube(aux);
+        aux.GenerateCube();
     }
 
-    void CutX(Cube section) {
-        int value = Random.Range(section.x + minSectionX, section.disX - minSectionX);
-        DrawCut(1, value, section.y, section.z, section.disY, section.disZ, Color.red);
+    /* CutAxis
+    calculates random value in [X,Y,Z] axis to cut section(Cube)
+        creating 2 sections(Cube s) and call GenerateCutRec
 
-        Cube sectionLeft = new Cube(section.x, section.y, section.z, value, section.disY, section.disZ);
-        Cube sectionRight = new Cube(value, section.y, section.z, section.disX, section.disY, section.disZ);
+    parameters:
+        Cube section: section(Cube) being considered for cut
+        Axis axis: axis in which we are performing a cut
+
+    return:
+        void  
+    */
+    void CutAxis(Cube section, Axis axis) {
+
+        int value;
+        Cube sectionLeft = null;
+        Cube sectionRight = null;
+
+        if (axis == Axis.x) {
+            value = Random.Range(section.x + minSectionX, section.disX - minSectionX);
+            DrawCut(Axis.x, value, section.y, section.z, section.disY, section.disZ, Color.red);
+
+            sectionLeft = new Cube(section.x, section.y, section.z, value, section.disY, section.disZ);
+            sectionRight = new Cube(value, section.y, section.z, section.disX, section.disY, section.disZ);
+        }
+        else if (axis == Axis.y) {
+            value = Random.Range(section.y + minSectionY, section.disY - minSectionY);
+            DrawCut(Axis.y, value, section.x, section.z, section.disX, section.disZ, Color.green);
+
+            sectionLeft = new Cube(section.x, section.y, section.z, section.disX, value, section.disZ);
+            sectionRight = new Cube(section.x, value, section.z, section.disX, section.disY, section.disZ);
+        }
+        else if (axis == Axis.z) {
+            value = Random.Range(section.z + minSectionZ, section.disZ - minSectionZ);
+            DrawCut(Axis.z, value, section.x, section.y, section.disX, section.disY, Color.blue);
+
+            sectionLeft = new Cube(section.x, section.y, section.z, section.disX, section.disY, value);
+            sectionRight = new Cube(section.x, section.y, value, section.disX, section.disY, section.disZ);
+        }
+        else {
+            Debug.LogError("Invalid axis number repesentation");
+        }
 
         GenerateCutRec(sectionLeft);
         GenerateCutRec(sectionRight);
     }
 
-    void CutY(Cube section)
-    {
-        int value = Random.Range(section.y + minSectionY, section.disY - minSectionY);
-        DrawCut(2, value, section.x, section.z, section.disX, section.disZ, Color.green);
+    /* CanCutInAxis
 
-        Cube sectionLeft = new Cube(section.x, section.y, section.z, section.disX, value, section.disZ);
-        Cube sectionRight = new Cube(section.x, value, section.z, section.disX, section.disY, section.disZ);
+    determines if we can further cut section(Cube) in the [X,Y,Z] axis,
+        this taking consideration in maxSection[X,Y,Z]
 
-        GenerateCutRec(sectionLeft);
-        GenerateCutRec(sectionRight);
-    }
+    parameters:
+       Cube section: section(Cube) being considered for cut
+       Axis axis: axis being determined
 
-    void CutZ(Cube section)
-    {
-        int value = Random.Range(section.z + minSectionZ, section.disZ - minSectionZ);
-        DrawCut(3, value, section.x, section.y, section.disX, section.disY, Color.blue);
+    return:
+        bool: true if we can cut
+    */
+    bool CanCutInAxis(Cube section, Axis axis) {
 
-        Cube sectionLeft = new Cube(section.x, section.y, section.z, section.disX, section.disY, value);
-        Cube sectionRight = new Cube(section.x, section.y, value, section.disX, section.disY, section.disZ);
+        int distance;
 
-        GenerateCutRec(sectionLeft);
-        GenerateCutRec(sectionRight);
-    }
-
-    bool CanCutInX(Cube section)
-    {
-        int distance = section.disX - section.x;
-        if (distance <= maxSectionX) {
-            return false;
+        if (axis == Axis.x) {
+            distance = section.disX - section.x;
+            if (distance <= maxSectionX) return false;
+        }
+        else if (axis == Axis.y){
+            distance = section.disY - section.y;
+            if (distance <= maxSectionY) return false;
+        }
+        else if (axis == Axis.z){
+            distance = section.disZ - section.z;
+            if (distance <= maxSectionZ) return false;
+        }
+        else {
+            Debug.LogError("Invalid Axis");
         }
         return true;
     }
 
-    bool CanCutInY(Cube section)
-    {
-        int distance = section.disY - section.y;
-        if (distance <= maxSectionY)
-        {
-            return false;
-        }
-        return true;
-    }
-
-    bool CanCutInZ(Cube section)
-    {
-        int distance = section.disZ - section.z;
-        if (distance <= maxSectionZ)
-        {
-            return false;
-        }
-        return true;
-    }
-
-    void GenerateCube(Cube c) {
-        GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        Vector3 midpoint = new Vector3(c.x + (c.disX / 2), c.y + (c.disY / 2), c.z + (c.disZ / 2));
-
-        cube.transform.position = midpoint;
-        cube.transform.localScale = new Vector3(c.disX, c.disY, c.disZ);
-    }
-
-    void DrawCube(Cube c, Color color) {
-        Debug.DrawLine(new Vector3(c.x, c.y, c.z), new Vector3(c.disX, c.y, c.z), color, 3600, false);
-        Debug.DrawLine(new Vector3(c.x, c.y, c.z), new Vector3(c.x, c.disY, c.z), color, 3600, false);
-        Debug.DrawLine(new Vector3(c.x, c.y, c.z), new Vector3(c.x, c.y, c.disZ), color, 3600, false);
-        Debug.DrawLine(new Vector3(c.x, c.disY, c.disZ), new Vector3(c.disX, c.disY, c.disZ), color, 3600, false);
-        Debug.DrawLine(new Vector3(c.disX, c.y, c.disZ), new Vector3(c.disX, c.disY, c.disZ), color, 3600, false);
-        Debug.DrawLine(new Vector3(c.disX, c.disY, c.z), new Vector3(c.disX, c.disY, c.disZ), color, 3600, false);
-        Debug.DrawLine(new Vector3(c.x, c.disY, c.z), new Vector3(c.disX, c.disY, c.z), color, 3600, false);
-        Debug.DrawLine(new Vector3(c.disX, c.disY, c.z), new Vector3(c.disX, c.y, c.z), color, 3600, false);
-        Debug.DrawLine(new Vector3(c.disX, c.y, c.z), new Vector3(c.disX, c.y, c.disZ), color, 3600, false);
-        Debug.DrawLine(new Vector3(c.x, c.disY, c.z), new Vector3(c.x, c.disY, c.disZ), color, 3600, false);
-        Debug.DrawLine(new Vector3(c.x, c.disY, c.disZ), new Vector3(c.x, c.y, c.disZ), color, 3600, false);
-        Debug.DrawLine(new Vector3(c.x, c.y, c.disZ), new Vector3(c.disX, c.y, c.disZ), color, 3600, false);
-    }
-
-    void DrawCut(int axis, int value, int p1, int p2, int size1, int size2, Color color) {
+    /* DrawCut
+        
+    Generates a 3D plane in space composed of Debug.DrawLine gizmos
+    
+    parameters:
+        int axis: -
+        int value: axis value
+        int p1: coordenate [X,Y,Z]
+        int p2: coordenate [X,Y,Z]
+        int size1: size[X,Y,Z]
+        int size2: size[X,Y,Z]
+        Color color: -
+    */
+    void DrawCut(Axis axis, int value, int p1, int p2, int size1, int size2, Color color) {
         int lineInterval = 5;
-        if (axis == 1)
-        {
+        if (axis == Axis.x){
             //cut with an x value
-            for (int i = p1; i < size1; i+= lineInterval)
-            {
+            for (int i = p1; i < size1; i+= lineInterval){
                 Debug.DrawLine(new Vector3( value, i, p2), new Vector3( value, i, size2), color, 5, false);
             }
         }
-        else if (axis == 2)
-        {
+        else if (axis == Axis.y){
             //cut with a y value
-            for (int i = p1; i < size1; i+= lineInterval)
-            {
+            for (int i = p1; i < size1; i+= lineInterval){
                 Debug.DrawLine(new Vector3(i, value, p2), new Vector3(i, value, size2), color, 5, false);
             }
-        }
-        else if (axis == 3)
-        {
+        }else if (axis == Axis.z){
             //cut with a z value
-            for (int i = p1; i < size1; i+= lineInterval)
-            {
+            for (int i = p1; i < size1; i+= lineInterval){
                 Debug.DrawLine(new Vector3(i, p2, value), new Vector3(i, size2, value), color, 5, false);
             }
         }
-        else
-        {
+        else{
             Debug.LogError("Invalid axis number");
         }
     }
 
-    bool RandomBool()
-    {
+    bool RandomBool(){
         if (Random.value >= 0.5)
         {
             return true;
@@ -230,8 +240,10 @@ public class g_3D_bsp : MonoBehaviour {
         return false;
     }
 
-    int Random3()
-    {
-        return Random.Range(1, 3);
+    Axis RandomAxis(){
+        int aux = Random.Range(1, 3);
+        if (aux == 1) return Axis.x;
+        else if (aux == 2) return Axis.y;
+        else return Axis.z;
     }
 }
