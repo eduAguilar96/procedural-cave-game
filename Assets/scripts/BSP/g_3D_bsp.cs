@@ -261,21 +261,42 @@ public class g_3D_bsp : MonoBehaviour {
         else return Axis.z;
     }
 
-    IEnumerator PostOrderTraversal(TreeNode<Cube> cube) {
+    //update doc needed
+    IEnumerator PostOrderTraversal(TreeNode<Cube> cubeNode) {
         //Debug.Log("Inside");
-        if (cube != null)
-        {
-            if (cube.Self != null)
-            {
-                yield return StartCoroutine(PostOrderTraversal(cube.LeftNode));
-                yield return StartCoroutine(PostOrderTraversal(cube.RightNode));
-                yield return new WaitForSeconds(0.1f);
-                cube.Self.DrawCube(Color.yellow);
-                Debug.Log(cube.Count);
+        if (cubeNode != null){
+            if (cubeNode.SelfCube != null){
+                yield return StartCoroutine(PostOrderTraversal(cubeNode.LeftNode));
+                yield return StartCoroutine(PostOrderTraversal(cubeNode.RightNode));
+                //yield return new WaitForSeconds(0.01f);
+
+                //if leaf, section with no inner sections
+                if (cubeNode.IsLeaf){
+                    //spawn room
+                    //store in room hash map
+                }
+                //if NOT leaf, section with with inner sections
+                else {
+                    //determine smallest distance, for a node.IsLeaf.Room.cube.midpoint from the Left branch to 
+                    //  a node.IsLeaf.Room.cube.midpoint from the right branch
+                        //get array left
+                        //get array right
+                        //compare array and get smallest distance... O(n^2) :(
+
+
+                    //create single hallway form this two node.room.midpoint, access
+                    // them via hash map to avoid new creation
+                }
+
+                cubeNode.SelfCube.DrawCube(LevelToColor(cubeNode.Level));
             }
         }
     }
-}
 
-//TODO: Check null nodes, null cubes in nodes, in BSP tree. No consistency?
-//      Find way to print tree
+    Color LevelToColor(int level) {
+        if (level == 0) { return Color.black; }
+        else if (level % 2 == 1) { return Color.red;  }
+        else { return Color.yellow; }
+
+    }
+}
