@@ -4,29 +4,38 @@ using UnityEngine;
 
 public class TreeNode<T> {
 
-    private readonly T _data;
+    private readonly T _self;
     private readonly int _level;
     private readonly TreeNode<T> _parent;
-    public TreeNode<T> _left;
-    public TreeNode<T> _right;
+    private TreeNode<T> _left;
+    private TreeNode<T> _right;
 
-    public TreeNode(T data) {
-        _data = data;
+    public TreeNode(T self) {
+        _self = self;
         _left = null;
         _right = null;
         _level = 0;
     }
 
-    public TreeNode(T data, TreeNode<T> parent) : this(data) {
+    public TreeNode(T self, TreeNode<T> parent) : this(self) {
         _parent = parent;
         _level = _parent != null ? _parent.Level + 1 : 0;
     }
 
     public int Level { get { return _level; } }
-    public int Count { get { return _left.Count + _right.Count; } }
+    public int Count {
+        get {
+            if (_self != null) {
+                return 1 + ((_left != null) ? _left.Count : 0) + ((_right != null) ? _right.Count : 0);
+            }
+            return 0;
+        }
+    }
     public bool IsRoot { get { return _parent == null; } }
     public bool IsLeaf { get { return _left.Count + _right.Count == 0; } }
-    public T Data { get { return _data; } }
+    public T Self { get { return _self; } }
+    public TreeNode<T> LeftNode { get { return _left; } }
+    public TreeNode<T> RightNode { get { return _right; } }
 
     public void Clear() {
         _left.Clear();

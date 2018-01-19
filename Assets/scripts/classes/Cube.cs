@@ -21,6 +21,16 @@ public class Cube{
         this.disZ = disZ;
     }
 
+    public Cube(Cube cube)
+    {
+        this.x = cube.x;
+        this.y = cube.y;
+        this.z = cube.z;
+        this.disX = cube.disX;
+        this.disY = cube.disY;
+        this.disZ = cube.disZ;
+    }
+
     public Vector3 MidPoint {
         get {
             return new Vector3(x + (disX / 2), y + (disY / 2), z + (disZ / 2));

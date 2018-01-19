@@ -31,16 +31,26 @@ public class g_3D_bsp : MonoBehaviour {
     [Range(1, 1000)] public int sectionToRoomPadding = 20;
 
     enum Axis {x,y,z}
+    TreeNode<Cube> rootSections;
+    TreeNode<Cube> rootRooms;
+
+    IEnumerator coroutine;
 
     // Use this for initialization
     void Start () {
         Cube cave = new Cube(0, 0, 0, caveX, caveY, caveZ);
-        cave.DrawCube(Color.yellow);
-        GenerateCutRec(cave);
+        rootSections = new TreeNode<Cube>(cave);
+
+        GenerateCutRec(cave, rootSections);
+        Debug.Log(rootSections.Count);
     }
 
 	// Update is called once per frame
 	void Update () {
+        if (Input.GetKeyDown("space")) {
+            Debug.Log("Startign Post-Order traversal");
+            StartCoroutine(PostOrderTraversal(rootSections));
+        }
 
 	}
 
@@ -51,6 +61,7 @@ public class g_3D_bsp : MonoBehaviour {
 
     parameters:
         Cube section: section being proccesd
+        TreeNode<Cube>: reference to BSP tree
     
     return:
         void
@@ -59,7 +70,8 @@ public class g_3D_bsp : MonoBehaviour {
         calls methods for either axis being cut which
         each call GenerateCubeRec 2 times.
     */
-    void GenerateCutRec(Cube section){
+    void GenerateCutRec(Cube section, TreeNode<Cube> node){
+
         bool canCutX = CanCutInAxis(section, Axis.x);
         bool canCutY = CanCutInAxis(section, Axis.y);
         bool canCutZ = CanCutInAxis(section, Axis.z);
@@ -68,26 +80,26 @@ public class g_3D_bsp : MonoBehaviour {
         if (canCutX && canCutY && canCutZ){
             //random pick
             Axis axis = RandomAxis();
-            if (axis == Axis.x) { CutAxis(section, Axis.x); }
-            else if (axis == Axis.y) { CutAxis(section, Axis.y); }
-            else if (axis == Axis.z) { CutAxis(section, Axis.z); }
+            if (axis == Axis.x) { CutAxis(section, Axis.x, node); }
+            else if (axis == Axis.y) { CutAxis(section, Axis.y, node); }
+            else if (axis == Axis.z) { CutAxis(section, Axis.z, node); }
             else { Debug.LogError("Invalid Random Axis"); }
         }else if (canCutX && canCutY){
             //can cut in x and y? random pick
-            if (RandomBool()) { CutAxis(section, Axis.x); }
-            else { CutAxis(section, Axis.y); }
+            if (RandomBool()) { CutAxis(section, Axis.x, node); }
+            else { CutAxis(section, Axis.y, node); }
         }else if (canCutX && canCutZ){
             //can cut in x and z? random pick
-            if (RandomBool()) { CutAxis(section, Axis.x); }
-            else { CutAxis(section, Axis.z); }
+            if (RandomBool()) { CutAxis(section, Axis.x, node); }
+            else { CutAxis(section, Axis.z, node); }
         }else if (canCutY && canCutZ){
             //can cut in y and z? random pick
-            if (RandomBool()) { CutAxis(section, Axis.y); }
-            else { CutAxis(section, Axis.z); }
+            if (RandomBool()) { CutAxis(section, Axis.y, node); }
+            else { CutAxis(section, Axis.z, node); }
         }//can only cut in one, do it
-        else if (canCutX) { CutAxis(section, Axis.x); }
-        else if (canCutY) { CutAxis(section, Axis.y); }
-        else if (canCutZ) { CutAxis(section, Axis.z); }
+        else if (canCutX) { CutAxis(section, Axis.x, node); }
+        else if (canCutY) { CutAxis(section, Axis.y, node); }
+        else if (canCutZ) { CutAxis(section, Axis.z, node); }
         else { GenerateRoom(section); }
     }
 
@@ -98,33 +110,33 @@ public class g_3D_bsp : MonoBehaviour {
     parameters:
         Cube section: section(Cube) being considered for cut
         Axis axis: axis in which we are performing a cut
+        TreeNode<Cube>: reference to BSP tree
 
     return:
         void  
     */
-    void CutAxis(Cube section, Axis axis) {
-
+    void CutAxis(Cube section, Axis axis, TreeNode<Cube> node) {
         int value;
         Cube sectionLeft = null;
         Cube sectionRight = null;
 
         if (axis == Axis.x) {
             value = Random.Range(section.x + minSectionX, section.disX - minSectionX);
-            DrawCut(Axis.x, value, section.y, section.z, section.disY, section.disZ, Color.red);
+            //DrawCut(Axis.x, value, section.y, section.z, section.disY, section.disZ, Color.red);
 
             sectionLeft = new Cube(section.x, section.y, section.z, value, section.disY, section.disZ);
             sectionRight = new Cube(value, section.y, section.z, section.disX, section.disY, section.disZ);
         }
         else if (axis == Axis.y) {
             value = Random.Range(section.y + minSectionY, section.disY - minSectionY);
-            DrawCut(Axis.y, value, section.x, section.z, section.disX, section.disZ, Color.green);
+            //DrawCut(Axis.y, value, section.x, section.z, section.disX, section.disZ, Color.green);
 
             sectionLeft = new Cube(section.x, section.y, section.z, section.disX, value, section.disZ);
             sectionRight = new Cube(section.x, value, section.z, section.disX, section.disY, section.disZ);
         }
         else if (axis == Axis.z) {
             value = Random.Range(section.z + minSectionZ, section.disZ - minSectionZ);
-            DrawCut(Axis.z, value, section.x, section.y, section.disX, section.disY, Color.blue);
+            //DrawCut(Axis.z, value, section.x, section.y, section.disX, section.disY, Color.blue);
 
             sectionLeft = new Cube(section.x, section.y, section.z, section.disX, section.disY, value);
             sectionRight = new Cube(section.x, section.y, value, section.disX, section.disY, section.disZ);
@@ -133,8 +145,10 @@ public class g_3D_bsp : MonoBehaviour {
             Debug.LogError("Invalid axis number repesentation");
         }
 
-        GenerateCutRec(sectionLeft);
-        GenerateCutRec(sectionRight);
+        node.AddLeft(sectionLeft);
+        node.AddRight(sectionRight);
+        GenerateCutRec(sectionLeft, node.LeftNode);
+        GenerateCutRec(sectionRight, node.RightNode);
     }
 
     /* CanCutInAxis
@@ -229,7 +243,7 @@ public class g_3D_bsp : MonoBehaviour {
         int coordenateZ = Random.Range(section.z + sectionToRoomPadding, section.disZ - sectionToRoomPadding - distanceZ);
 
         Cube aux = new Cube(coordenateX, coordenateY, coordenateZ, distanceX, distanceY, distanceZ);
-        aux.GenerateCube();
+        //aux.GenerateCube();
     }
 
     bool RandomBool(){
@@ -246,4 +260,22 @@ public class g_3D_bsp : MonoBehaviour {
         else if (aux == 2) return Axis.y;
         else return Axis.z;
     }
+
+    IEnumerator PostOrderTraversal(TreeNode<Cube> cube) {
+        //Debug.Log("Inside");
+        if (cube != null)
+        {
+            if (cube.Self != null)
+            {
+                yield return StartCoroutine(PostOrderTraversal(cube.LeftNode));
+                yield return StartCoroutine(PostOrderTraversal(cube.RightNode));
+                yield return new WaitForSeconds(0.1f);
+                cube.Self.DrawCube(Color.yellow);
+                Debug.Log(cube.Count);
+            }
+        }
+    }
 }
+
+//TODO: Check null nodes, null cubes in nodes, in BSP tree. No consistency?
+//      Find way to print tree
