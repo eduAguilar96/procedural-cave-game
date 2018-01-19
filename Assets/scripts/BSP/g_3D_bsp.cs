@@ -60,9 +60,9 @@ public class g_3D_bsp : MonoBehaviour {
         each call GenerateCubeRec 2 times.
     */
     void GenerateCutRec(Cube section){
-        bool canCutX = CanCutInX(section);
-        bool canCutY = CanCutInY(section);
-        bool canCutZ = CanCutInZ(section);
+        bool canCutX = CanCutInAxis(section, Axis.x);
+        bool canCutY = CanCutInAxis(section, Axis.y);
+        bool canCutZ = CanCutInAxis(section, Axis.z);
 
         //can cut in the three dimensions?
         if (canCutX && canCutY && canCutZ){
@@ -89,30 +89,6 @@ public class g_3D_bsp : MonoBehaviour {
         else if (canCutY) { CutAxis(section, Axis.y); }
         else if (canCutZ) { CutAxis(section, Axis.z); }
         else { GenerateRoom(section); }
-    }
-
-    /* GenerateRoom 
-
-    calculates random values for a room(Cube) which rests inside a section(Cube),
-        this taking into account: minRoom[X,Y,Z] and sectionToRoomPadding
-    
-    parameters:
-        Cube section: section(Cube) in which a room(Cube) is being generated
-
-    return:
-        void
-    */
-    void GenerateRoom(Cube section) {
-        int distanceX = Random.Range(minRoomX, section.disX - section.x - 2 * sectionToRoomPadding);
-        int distanceY = Random.Range(minRoomY, section.disY - section.y - 2 * sectionToRoomPadding);
-        int distanceZ = Random.Range(minRoomZ, section.disZ - section.z - 2 * sectionToRoomPadding);
-
-        int coordenateX = Random.Range(section.x + sectionToRoomPadding, section.disX - sectionToRoomPadding - distanceX);
-        int coordenateY = Random.Range(section.y + sectionToRoomPadding, section.disY - sectionToRoomPadding - distanceY);
-        int coordenateZ = Random.Range(section.z + sectionToRoomPadding, section.disZ - sectionToRoomPadding - distanceZ);
-
-        Cube aux = new Cube(coordenateX, coordenateY, coordenateZ, distanceX, distanceY, distanceZ);
-        aux.GenerateCube();
     }
 
     /* CutAxis
@@ -230,6 +206,30 @@ public class g_3D_bsp : MonoBehaviour {
         else{
             Debug.LogError("Invalid axis number");
         }
+    }
+
+    /* GenerateRoom 
+
+    calculates random values for a room(Cube) which rests inside a section(Cube),
+        this taking into account: minRoom[X,Y,Z] and sectionToRoomPadding
+    
+    parameters:
+        Cube section: section(Cube) in which a room(Cube) is being generated
+
+    return:
+        void
+    */
+    void GenerateRoom(Cube section) {
+        int distanceX = Random.Range(minRoomX, section.disX - section.x - 2 * sectionToRoomPadding);
+        int distanceY = Random.Range(minRoomY, section.disY - section.y - 2 * sectionToRoomPadding);
+        int distanceZ = Random.Range(minRoomZ, section.disZ - section.z - 2 * sectionToRoomPadding);
+
+        int coordenateX = Random.Range(section.x + sectionToRoomPadding, section.disX - sectionToRoomPadding - distanceX);
+        int coordenateY = Random.Range(section.y + sectionToRoomPadding, section.disY - sectionToRoomPadding - distanceY);
+        int coordenateZ = Random.Range(section.z + sectionToRoomPadding, section.disZ - sectionToRoomPadding - distanceZ);
+
+        Cube aux = new Cube(coordenateX, coordenateY, coordenateZ, distanceX, distanceY, distanceZ);
+        aux.GenerateCube();
     }
 
     bool RandomBool(){
