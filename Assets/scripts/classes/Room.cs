@@ -13,6 +13,10 @@ public class Room : Cube {
     public readonly Vector3 midPoint;
     public Door[] doors;
 
+    public Room() {
+
+    }
+
     public Room(Cube cube) {
         this.x = cube.x;
         this.y = cube.y;
@@ -67,8 +71,11 @@ public class Room : Cube {
         int imin = 0;
         int jmin = 0;
 
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
+        //Debug.Log(midPoint);
+        //Debug.Log(room.MidPoint);
+
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 6; j++) {
                 float distance = Vector3.Distance(doors[i].Midpoint, room.doors[j].Midpoint);
                 if (distance < min){
                     min = distance;
@@ -77,8 +84,20 @@ public class Room : Cube {
                 }
             }
         }
-        Debug.DrawLine(doors[imin].Midpoint, doors[jmin].Midpoint, Color.green, 3600, false);
+        Debug.DrawLine(doors[imin].Midpoint, room.doors[jmin].Midpoint, Color.green, 3600, true);
+    }
 
+    //This method is required by the IComparable
+    //interface. 
+    public int CompareTo(Room other)
+    {
+        if (other == null)
+        {
+            return 1;
+        }
+
+        //Return the difference in power.
+        return 1;
     }
 
 }
