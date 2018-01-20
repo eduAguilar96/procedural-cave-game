@@ -123,9 +123,6 @@ GameObject:
   - component: {fileID: 879042045}
   - component: {fileID: 879042044}
   - component: {fileID: 879042043}
-  - component: {fileID: 879042042}
-  - component: {fileID: 879042046}
-  - component: {fileID: 879042047}
   - component: {fileID: 879042048}
   m_Layer: 0
   m_Name: root
@@ -134,18 +131,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &879042042
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 879042041}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 58334e74ddbfde0479a11952a56d528c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 90
 --- !u!23 &879042043
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -194,40 +179,12 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 879042041}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.000000059604645, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &879042046
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 879042041}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fb31363c10dacfa468a23ba2f75354ad, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  width: 20
---- !u!114 &879042047
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 879042041}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7111d286cd430ad4aaddcc297c6590de, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  caveSize: 1000
-  maxSeccionSize: 250
-  minSeccionSize: 100
-  minRoomSize: 60
-  sectionToRoomPadding: 20
 --- !u!114 &879042048
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -239,15 +196,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a35970cbf144774e886115e32297731, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  caveY: 50
   caveX: 100
-  caveY: 100
   caveZ: 100
   maxSectionY: 25
   maxSectionX: 50
   maxSectionZ: 50
   minSectionY: 10
-  minSectionX: 10
-  minSectionZ: 10
+  minSectionX: 20
+  minSectionZ: 20
   minRoomY: 6
   minRoomX: 6
   minRoomZ: 6

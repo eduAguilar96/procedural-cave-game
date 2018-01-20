@@ -8,8 +8,8 @@ public class g_3D_bsp : MonoBehaviour {
     [Header("NOTE: 'Y' is up you doofus")]
     [Space(10)]
     [Header("Cave size")]
-    [Range(1, 1000)] public int caveX = 1000;
     [Range(1, 1000)] public int caveY = 1000;
+    [Range(1, 1000)] public int caveX = 1000;
     [Range(1, 1000)] public int caveZ = 1000;
     [Space(10)]
     [Header("Max Section Size")]
