@@ -9,6 +9,7 @@ public class TreeNode<Cube> {
     private readonly TreeNode<Cube> _parent;
     private TreeNode<Cube> _left;
     private TreeNode<Cube> _right;
+    public Room room;
 
     public TreeNode(Cube cube) {
         _cube = cube;

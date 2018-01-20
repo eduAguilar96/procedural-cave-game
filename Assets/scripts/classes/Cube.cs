@@ -11,6 +11,15 @@ public class Cube{
     public int disY;
     public int disZ;
 
+    public Cube() {
+        this.x = 0;
+        this.y = 0;
+        this.z = 0;
+        this.disX = 1;
+        this.disY = 1;
+        this.disZ = 1;
+    }
+
     public Cube(int x, int y, int z, int disX, int disY, int disZ)
     {
         this.x = x;
@@ -37,27 +46,21 @@ public class Cube{
         }
     }
 
-    public void GenerateCube()
-    {
-        GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-
-        cube.transform.position = MidPoint;
-        cube.transform.localScale = new Vector3(disX, disY, disZ);
-    }
-
     public void DrawCube(Color color)
     {
-        Debug.DrawLine(new Vector3(x, y, z), new Vector3(disX, y, z), color, 3600, false);
-        Debug.DrawLine(new Vector3(x, y, z), new Vector3(x, disY, z), color, 3600, false);
-        Debug.DrawLine(new Vector3(x, y, z), new Vector3(x, y, disZ), color, 3600, false);
-        Debug.DrawLine(new Vector3(x, disY, disZ), new Vector3(disX, disY, disZ), color, 3600, false);
-        Debug.DrawLine(new Vector3(disX, y, disZ), new Vector3(disX, disY, disZ), color, 3600, false);
-        Debug.DrawLine(new Vector3(disX, disY, z), new Vector3(disX, disY, disZ), color, 3600, false);
-        Debug.DrawLine(new Vector3(x, disY, z), new Vector3(disX, disY, z), color, 3600, false);
-        Debug.DrawLine(new Vector3(disX, disY, z), new Vector3(disX, y, z), color, 3600, false);
-        Debug.DrawLine(new Vector3(disX, y, z), new Vector3(disX, y, disZ), color, 3600, false);
-        Debug.DrawLine(new Vector3(x, disY, z), new Vector3(x, disY, disZ), color, 3600, false);
-        Debug.DrawLine(new Vector3(x, disY, disZ), new Vector3(x, y, disZ), color, 3600, false);
-        Debug.DrawLine(new Vector3(x, y, disZ), new Vector3(disX, y, disZ), color, 3600, false);
+        bool transparent = true;
+
+        Debug.DrawLine(new Vector3(x, y, z), new Vector3(disX, y, z), color, 3600, transparent);
+        Debug.DrawLine(new Vector3(x, y, z), new Vector3(x, disY, z), color, 3600, transparent);
+        Debug.DrawLine(new Vector3(x, y, z), new Vector3(x, y, disZ), color, 3600, transparent);
+        Debug.DrawLine(new Vector3(x, disY, disZ), new Vector3(disX, disY, disZ), color, 3600, transparent);
+        Debug.DrawLine(new Vector3(disX, y, disZ), new Vector3(disX, disY, disZ), color, 3600, transparent);
+        Debug.DrawLine(new Vector3(disX, disY, z), new Vector3(disX, disY, disZ), color, 3600, transparent);
+        Debug.DrawLine(new Vector3(x, disY, z), new Vector3(disX, disY, z), color, 3600, transparent);
+        Debug.DrawLine(new Vector3(disX, disY, z), new Vector3(disX, y, z), color, 3600, transparent);
+        Debug.DrawLine(new Vector3(disX, y, z), new Vector3(disX, y, disZ), color, 3600, transparent);
+        Debug.DrawLine(new Vector3(x, disY, z), new Vector3(x, disY, disZ), color, 3600, transparent);
+        Debug.DrawLine(new Vector3(x, disY, disZ), new Vector3(x, y, disZ), color, 3600, transparent);
+        Debug.DrawLine(new Vector3(x, y, disZ), new Vector3(disX, y, disZ), color, 3600, transparent);
     }
 }

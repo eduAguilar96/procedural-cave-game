@@ -100,7 +100,7 @@ public class g_3D_bsp : MonoBehaviour {
         else if (canCutX) { CutAxis(section, Axis.x, node); }
         else if (canCutY) { CutAxis(section, Axis.y, node); }
         else if (canCutZ) { CutAxis(section, Axis.z, node); }
-        else { GenerateRoom(section); }
+        else { Debug.Log("Recursive End"); }
     }
 
     /* CutAxis
@@ -222,7 +222,7 @@ public class g_3D_bsp : MonoBehaviour {
         }
     }
 
-    /* GenerateRoom 
+    /* GenerateRoomDimensions
 
     calculates random values for a room(Cube) which rests inside a section(Cube),
         this taking into account: minRoom[X,Y,Z] and sectionToRoomPadding
@@ -231,9 +231,9 @@ public class g_3D_bsp : MonoBehaviour {
         Cube section: section(Cube) in which a room(Cube) is being generated
 
     return:
-        void
+        aux: generated room
     */
-    void GenerateRoom(Cube section) {
+    Cube GenerateRoomDimensions(Cube section) {
         int distanceX = Random.Range(minRoomX, section.disX - section.x - 2 * sectionToRoomPadding);
         int distanceY = Random.Range(minRoomY, section.disY - section.y - 2 * sectionToRoomPadding);
         int distanceZ = Random.Range(minRoomZ, section.disZ - section.z - 2 * sectionToRoomPadding);
@@ -243,7 +243,7 @@ public class g_3D_bsp : MonoBehaviour {
         int coordenateZ = Random.Range(section.z + sectionToRoomPadding, section.disZ - sectionToRoomPadding - distanceZ);
 
         Cube aux = new Cube(coordenateX, coordenateY, coordenateZ, distanceX, distanceY, distanceZ);
-        //aux.GenerateCube();
+        return aux;
     }
 
     bool RandomBool(){
@@ -262,17 +262,20 @@ public class g_3D_bsp : MonoBehaviour {
     }
 
     //update doc needed
-    IEnumerator PostOrderTraversal(TreeNode<Cube> cubeNode) {
+    IEnumerator PostOrderTraversal(TreeNode<Cube> sectionNode) {
         //Debug.Log("Inside");
-        if (cubeNode != null){
-            if (cubeNode.SelfCube != null){
-                yield return StartCoroutine(PostOrderTraversal(cubeNode.LeftNode));
-                yield return StartCoroutine(PostOrderTraversal(cubeNode.RightNode));
+        if (sectionNode != null){
+            if (sectionNode.SelfCube != null){
+                yield return StartCoroutine(PostOrderTraversal(sectionNode.LeftNode));
+                yield return StartCoroutine(PostOrderTraversal(sectionNode.RightNode));
                 //yield return new WaitForSeconds(0.01f);
 
                 //if leaf, section with no inner sections
-                if (cubeNode.IsLeaf){
+                if (sectionNode.IsLeaf){
                     //spawn room
+                    sectionNode.room = new Room(GenerateRoomDimensions(sectionNode.SelfCube));
+                    sectionNode.room.GenerateCube();
+                    sectionNode.room.GenerateSphereAtDoors();
                     //store in room hash map
                 }
                 //if NOT leaf, section with with inner sections
@@ -288,7 +291,7 @@ public class g_3D_bsp : MonoBehaviour {
                     // them via hash map to avoid new creation
                 }
 
-                cubeNode.SelfCube.DrawCube(LevelToColor(cubeNode.Level));
+                //sectionNode.SelfCube.DrawCube(LevelToColor(sectionNode.Level));
             }
         }
     }
