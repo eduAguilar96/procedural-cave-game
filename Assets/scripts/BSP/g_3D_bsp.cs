@@ -44,6 +44,17 @@ public class g_3D_bsp : MonoBehaviour {
 
         GenerateCutRec(cave, rootSections);
         Debug.Log(rootSections.Count);
+
+        //Beiser curve test
+        Vector3 p1 = new Vector3(0,0,0);
+        Vector3 p2 = new Vector3(0, 4, 0);
+        Vector3 p3 = new Vector3(4, 4, 0);
+        Vector3 p4 = new Vector3(4, 0, 0);
+
+        Vector3[] aux = new Vector3[4] { p1, p2, p3, p4 };
+
+        BezierCurve nose = new BezierCurve(aux);
+        nose.GeneratePath(5.0f);
     }
 
 	// Update is called once per frame
